@@ -75,6 +75,7 @@ public class OSI {
 	public static void callPhysicalLayer() {
 		char[] ch = message.toCharArray();
 		String bitstring;
+		System.out.println("Bit stream is: ");
 		for (char c : ch) {
 			if (c == '|') {
 				System.out.print("| ");

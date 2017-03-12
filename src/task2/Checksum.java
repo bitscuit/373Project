@@ -8,8 +8,13 @@ public class Checksum {
 
 	public static void main(String[] args) {
 		String codeword = generate();
+		System.out.println("The codeword (message + checksum) is: " + codeword);
+		System.out.println("Verifying message...");
 		verify(codeword);
+		System.out.println();
+		System.out.println("Altering message...");
 		codeword = alter(codeword, 2);
+		System.out.println("Verifying altered message...");
 		verify(codeword);
 	}
 
@@ -61,7 +66,7 @@ public class Checksum {
 		String checksum = Integer.toBinaryString(sum);
 		// gets rid of the sign extension on the checksum
 		checksum = checksum.substring(checksum.length() - blockSize);
-		System.out.println(checksum);
+		System.out.println("Checksum for this message is: " + checksum);
 		return checksum;
 	}
 
@@ -90,9 +95,9 @@ public class Checksum {
 	public static void verify(String s) {
 		int sum = getSum(s);
 		if (sum == 0) {
-			System.out.println("Message has no error");
+			System.out.println("Verifier: Message has no error");
 		} else {
-			System.out.println("Message has error");
+			System.out.println("Verifier: Message has error");
 		}
 	}
 
