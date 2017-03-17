@@ -36,6 +36,14 @@ public class Client {
 			//Socket to connect to the server at the IP address and port
 			Socket clientSkt = new Socket(serverAddr, serverTCPport);
 			
+			byte[] b = new byte[100];
+			InputStream in1 = clientSkt.getInputStream();
+			BufferedInputStream buffIn1 = null;
+			buffIn1 = new BufferedInputStream(in1);
+			buffIn1.read(b, 0, b.length);
+			String s1 = new String(b);
+			System.out.println(s1);
+			
 			// request file
 			System.out.println("Enter file name to download");
 			s = input.nextLine();
