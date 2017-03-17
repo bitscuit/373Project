@@ -35,6 +35,15 @@ public class Client {
 			//Open the socket
 			//Socket to connect to the server at the IP address and port
 			Socket clientSkt = new Socket(serverAddr, serverTCPport);
+			
+			// request file
+			System.out.println("Enter file name to download");
+			s = input.nextLine();
+			byte[] filename = s.getBytes();
+			OutputStream outF = clientSkt.getOutputStream();
+			outF.write(filename, 0, filename.length);
+			outF.flush();
+			
 			//Client Waits for an incoming message from the server
 			//Client is blocked until Server replies
 			//			BufferedReader br = new BufferedReader(new InputStreamReader(clientSkt.getInputStream()));
@@ -50,7 +59,7 @@ public class Client {
 			dir.mkdirs();
 			BufferedOutputStream out = null;
 			try {
-				out = new BufferedOutputStream(new FileOutputStream("ClientFiles" + File.separator + "test.txt"));
+				out = new BufferedOutputStream(new FileOutputStream("ClientFiles" + File.separator + s));
 				out.write(data);
 				out.flush();
 			} catch (IOException e) {
