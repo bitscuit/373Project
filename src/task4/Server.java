@@ -15,6 +15,7 @@ import java.net.Socket;
 public class Server {
 
 	private static ServerSocket conn = null;
+	private static Socket dataSkt = null;
 
 	private static File file1 = new File("ServerFiles", "File1.txt");
 	private static File file2 = new File("ServerFiles", "File2.txt");
@@ -30,9 +31,25 @@ public class Server {
 		sendFile(file);
 
 	}
-	
+
+	// Functional
 	private static String getFileName() {
-		String s = "Filename";
+		InputStream in = null;
+		BufferedInputStream buffIn = null;
+		try {
+			in = dataSkt.getInputStream();
+			buffIn = new BufferedInputStream(in);
+		} catch (IOException e) {
+			System.err.println("Inputstream failed for filename");
+		}
+		byte[] b = new byte[10];
+		try {
+			buffIn.read(b, 0, b.length);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			System.err.println("Could not read filename");
+		}
+		String s = new String(b);
 		return s;
 	}
 
@@ -94,6 +111,7 @@ public class Server {
 
 	}
 
+	// Functional
 	private static void setupConnection() {
 		//Define Server Port Number to listen on
 		int servPort = portNum;
@@ -103,14 +121,27 @@ public class Server {
 		} catch (IOException e) {
 			System.err.println("Couldn't set up connection");
 		}
+
+		//Tells us if server is up and running
+		System.out.println("Up and Running...Waiting for Connection");
+		//Socket for accepting message
+		try {
+			dataSkt = conn.accept();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			System.err.println("Cannot create socket");
+		}
+		System.out.println("Established Connection");
 	}
 
 	private static byte[] readFile(String s) {
+		s = s.trim();
+		System.out.println(s);
 		byte[] data = new byte[8192];
 		InputStream in = null;
 		BufferedInputStream buffIn = null;
 		try {
-			in = new FileInputStream("ServerFiles" + File.separator + file1.getName());
+			in = new FileInputStream("ServerFiles" + File.separator + s);
 			buffIn = new BufferedInputStream(in);
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
@@ -129,19 +160,6 @@ public class Server {
 	}
 
 	private static void sendFile(byte[] b) {
-		//Message to receive
-		String msg = "This is a test";
-		//Tells us if server is up and running
-		System.out.println("Up and Running...Waiting for Connection");
-		//Socket for accepting message
-		Socket dataSkt = null;
-		try {
-			dataSkt = conn.accept();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			System.err.println("Cannot create socket");
-		}
-		System.out.print("passed accept");
 		//Output stream of data to be sent to client
 		PrintStream sktOutput = null;
 		try {
