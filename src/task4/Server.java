@@ -25,9 +25,15 @@ public class Server {
 
 		setupFiles();
 		setupConnection();
-		byte[] file = readFile();
+		String filename = getFileName();
+		byte[] file = readFile(filename);
 		sendFile(file);
 
+	}
+	
+	private static String getFileName() {
+		String s = "Filename";
+		return s;
 	}
 
 	/**
@@ -99,7 +105,7 @@ public class Server {
 		}
 	}
 
-	private static byte[] readFile() {
+	private static byte[] readFile(String s) {
 		byte[] data = new byte[8192];
 		InputStream in = null;
 		BufferedInputStream buffIn = null;
@@ -133,7 +139,7 @@ public class Server {
 			dataSkt = conn.accept();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.err.println("Cannot create socket");
 		}
 		System.out.print("passed accept");
 		//Output stream of data to be sent to client

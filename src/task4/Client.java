@@ -15,13 +15,14 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.util.Scanner;
 
 public class Client {
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		try{
 			//Get the IP address of the server
-			InetAddress serverAddr = InetAddress.getByName("192.168.0.100");
+			InetAddress serverAddr = InetAddress.getByName("192.168.0.108");
 			//Server Port Number to Send Connection Request to
 			int serverTCPport = Integer.parseInt("10000"); //Receive Port Number from CmdLine
 			//Open the socket
@@ -32,6 +33,9 @@ public class Client {
 			//			BufferedReader br = new BufferedReader(new InputStreamReader(clientSkt.getInputStream()));
 			//			System.out.println(br.readLine());
 
+			Scanner input = new Scanner(System.in);
+			String s = input.nextLine();
+			System.out.println(s);
 			byte[] data = new byte[53];
 			InputStream in = clientSkt.getInputStream();
 			BufferedInputStream buffIn = null;
