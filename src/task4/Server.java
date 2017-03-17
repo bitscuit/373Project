@@ -8,6 +8,7 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.PrintStream;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -18,22 +19,55 @@ public class Server {
 	private static Socket dataSkt = null;
 
 	private static File file1 = new File("ServerFiles", "File1.txt");
-	private static File file2 = new File("ServerFiles", "File2.txt");
-	private static File file3 = new File("ServerFiles", "File3.txt");
+	private static File dir = new File("ServerFiles");
+	
 	private static int portNum = 10000;
 
 	public static void main(String[] args) {
 
 		setupFiles();
 		setupConnection();
+		listFiles();
 		String filename = getFileName();
 		byte[] file = readFile(filename);
 		sendFile(file);
 
 	}
+	
+	private static void listFiles() {
+		System.out.println("Sending client list of available files...");
+		OutputStream out = null;
+		try {
+			out = dataSkt.getOutputStream();
+		} catch (IOException e) {
+			System.err.print("Could not get socket output stream in listFiles()");
+		}
+		
+		String list = "";
+		for (File f : dir.listFiles()) {
+			if (f.isFile()) {
+				list += f.getName() + " ";
+			}
+		}
+		
+		byte[] b = list.getBytes();
+		try {
+			out.write(b, 0, b.length);
+		} catch (IOException e) {
+			System.err.println("Could not write filename in listFiles()");
+		}
+		
+		try {
+			out.flush();
+			System.out.println("File list sent");
+		} catch (IOException e) {
+			System.err.println("Could not flush output stream in listFiles()");
+		}
+	}
 
 	// Functional
 	private static String getFileName() {
+		System.out.println("Waiting for client request...");
 		InputStream in = null;
 		BufferedInputStream buffIn = null;
 		try {
@@ -45,11 +79,13 @@ public class Server {
 		byte[] b = new byte[10];
 		try {
 			buffIn.read(b, 0, b.length);
+			System.out.println("Request accepted");
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
-			System.err.println("Could not read filename");
+			System.err.println("Could not read file");
 		}
 		String s = new String(b);
+		s = s.trim();
 		return s;
 	}
 
@@ -57,41 +93,17 @@ public class Server {
 	 * Method to generate server files if they do not exist yet
 	 */
 	private static void setupFiles() {
-		File dir = new File("ServerFiles");
 		if (!dir.exists()) {
 			dir.mkdirs();
-
 		}
 		BufferedWriter out = null;
 		String s1 = "This is for file1.";
-		String s2 = "This is for file2.";
-		String s3 = "This is for file3.";
 
 		if (!(file1.exists())) {
 			System.out.println("File 1 doesn't exist");
 			try {
 				out = new BufferedWriter(new FileWriter("ServerFiles" + File.separator + file1.getName()));
 				out.write(s1);
-				out.flush();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		if(!file2.exists()) {
-			try {
-				out = new BufferedWriter(new FileWriter("ServerFiles" + File.separator + file2.getName()));
-				out.write(s2);
-				out.flush();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		if (!file3.exists()) {
-			try {
-				out = new BufferedWriter(new FileWriter("ServerFiles" + File.separator + file3.getName()));
-				out.write(s3);
 				out.flush();
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
@@ -118,25 +130,25 @@ public class Server {
 		//Server Socket for connection
 		try {
 			conn = new ServerSocket(servPort);
+			System.out.println("Server up");
 		} catch (IOException e) {
-			System.err.println("Couldn't set up connection");
+			System.err.println("Couldn't set up server");
 		}
 
 		//Tells us if server is up and running
-		System.out.println("Up and Running...Waiting for Connection");
+		System.out.println("Waiting for Connection...");
 		//Socket for accepting message
 		try {
 			dataSkt = conn.accept();
+			System.out.println("Established Connection");
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
-			System.err.println("Cannot create socket");
+			System.err.println("No connection");
 		}
-		System.out.println("Established Connection");
 	}
 
 	private static byte[] readFile(String s) {
-		s = s.trim();
-		System.out.println(s);
+		System.out.println("Copying contents of file...");
 		byte[] data = new byte[8192];
 		InputStream in = null;
 		BufferedInputStream buffIn = null;
@@ -150,6 +162,7 @@ public class Server {
 
 		try {
 			buffIn.read(data, 0, data.length);
+			System.out.println("File contents copied");
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -160,6 +173,7 @@ public class Server {
 	}
 
 	private static void sendFile(byte[] b) {
+		System.out.println("Sending file to client...");
 		//Output stream of data to be sent to client
 		PrintStream sktOutput = null;
 		try {
@@ -170,6 +184,7 @@ public class Server {
 		}
 		sktOutput.write(b, 0, b.length);
 		sktOutput.flush();
+		System.out.println("File sent");
 		//Close the Socket
 		try {
 			dataSkt.close();
