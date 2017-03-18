@@ -26,16 +26,16 @@ public class Client {
 			String s = input.nextLine();
 			//Get the IP address of the server
 			InetAddress serverAddr = InetAddress.getByName(s);
-			
+
 			System.out.println("Enter port number");
 			s = input.nextLine();
 			//Server Port Number to Send Connection Request to
 			int serverTCPport = Integer.parseInt(s); //Receive Port Number from CmdLine
-			
+
 			//Open the socket
 			//Socket to connect to the server at the IP address and port
 			Socket clientSkt = new Socket(serverAddr, serverTCPport);
-			
+
 			byte[] b = new byte[100];
 			InputStream in1 = clientSkt.getInputStream();
 			BufferedInputStream buffIn1 = null;
@@ -43,36 +43,42 @@ public class Client {
 			buffIn1.read(b, 0, b.length);
 			String s1 = new String(b);
 			System.out.println(s1);
-			
+
 			// request file
-			System.out.println("Enter file name to download");
-			s = input.nextLine();
-			byte[] filename = s.getBytes();
-			OutputStream outF = clientSkt.getOutputStream();
-			outF.write(filename, 0, filename.length);
-			outF.flush();
-			
-			//Client Waits for an incoming message from the server
-			//Client is blocked until Server replies
-			//			BufferedReader br = new BufferedReader(new InputStreamReader(clientSkt.getInputStream()));
-			//			System.out.println(br.readLine());
-			byte[] data = new byte[53];
-			InputStream in = clientSkt.getInputStream();
-			BufferedInputStream buffIn = null;
-			buffIn = new BufferedInputStream(in);
 
-			buffIn.read(data, 0, data.length);
+			while (true) {
+				System.out.println("Enter file name to download");
+				s = input.nextLine();
+				if (s.toLowerCase().contains("exit")) {
+					break;
+				}
+				byte[] filename = s.getBytes();
+				OutputStream outF = clientSkt.getOutputStream();
+				outF.write(filename, 0, filename.length);
+				outF.flush();
 
-			File dir = new File("ClientFiles");
-			dir.mkdirs();
-			BufferedOutputStream out = null;
-			try {
-				out = new BufferedOutputStream(new FileOutputStream("ClientFiles" + File.separator + s));
-				out.write(data);
-				out.flush();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				//Client Waits for an incoming message from the server
+				//Client is blocked until Server replies
+				//			BufferedReader br = new BufferedReader(new InputStreamReader(clientSkt.getInputStream()));
+				//			System.out.println(br.readLine());
+				byte[] data = new byte[53];
+				InputStream in = clientSkt.getInputStream();
+				BufferedInputStream buffIn = null;
+				buffIn = new BufferedInputStream(in);
+
+				buffIn.read(data, 0, data.length);
+
+				File dir = new File("ClientFiles");
+				dir.mkdirs();
+				BufferedOutputStream out = null;
+				try {
+					out = new BufferedOutputStream(new FileOutputStream("ClientFiles" + File.separator + s));
+					out.write(data);
+					out.flush();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 			//Connection release
 			clientSkt.close();
