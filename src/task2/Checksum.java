@@ -2,6 +2,14 @@ package task2;
 
 import java.util.Scanner;
 
+/**
+ * @author Henry Li, Michael Tanel, Ross Vrana-Godwin
+ * Task 2
+ * This class implements the Checksum Algorithm for error detection.
+ * A message is accepted from the user verified using the algorithm.
+ * To ensure correctness, the user can flip a bit in the bit stream, and the
+ * program will let the user know that there is an error in the message.
+ */
 public class Checksum {
 
 	public static int blockSize = 16;
@@ -27,13 +35,18 @@ public class Checksum {
 		codeword = alter(codeword, index);
 		System.out.println("Verifying altered message...");
 		verify(codeword);
-	}
+	} // end main method
 
+	/**
+	 * Generates the codeword which is the message + checksum
+	 * @param s Message to be encoded with checksum
+	 * @return Returns codeword (message + checksum)
+	 */
 	public static String generate(String s) {
 		String checksum = getChecksum(s);
 		String codeword = s + checksum;
 		return codeword;
-	}
+	} // end generate method
 
 	/**
 	 * Method to strip string of anything that is not 1 or 0
@@ -48,10 +61,14 @@ public class Checksum {
 			}
 		}
 		return message;
-	}
+	} // end stripString method
 	
+	/**
+	 * Pad string with 0's so that s can be divided evenly into block sizes.
+	 * @param s String to be padded.
+	 * @return Return padded string.
+	 */
 	private static String normalizeString(String s) {
-		// pad string with 0's if String s cannot be grouped evenly
 		if (s.length() % blockSize != 0) {
 			int zeroes = blockSize - (s.length() % blockSize);
 			for (int i = 0; i < zeroes; i++) {
@@ -59,7 +76,7 @@ public class Checksum {
 			}
 		}
 		return s;
-	}
+	} // end normalizeString method
 
 	/**
 	 * Method to calculate the checksum given a message
@@ -74,7 +91,7 @@ public class Checksum {
 		checksum = checksum.substring(checksum.length() - blockSize);
 		System.out.println("Checksum for this message is: " + checksum);
 		return checksum;
-	}
+	} // end getChecksum method
 
 	/**
 	 * Method to sum all the blocks of the message and perform modulo arithmetic
@@ -96,8 +113,12 @@ public class Checksum {
 		int pow = (int) Math.pow(2, blockSize);
 		sum = (int) (sum % (pow - 1));
 		return sum;
-	}
+	} // end getSum method
 
+	/**
+	 * Verifies that the String s passed the checksum test.
+	 * @param s String to be verified.
+	 */
 	public static void verify(String s) {
 		int sum = getSum(s);
 		if (sum == 0) {
@@ -105,8 +126,14 @@ public class Checksum {
 		} else {
 			System.out.println("Verifier: Message has error");
 		}
-	}
+	} // end verify method
 
+	/**
+	 * Flips the specified bit in the bit string s.
+	 * @param s Bit string to have a bit flipped.
+	 * @param bit Index of the bit to be flipped.
+	 * @return Returns altered bit string.
+	 */
 	public static String alter(String s, int bit) {
 		String altered = "";
 		for (int i = 0; i < s.length(); i++) {
@@ -117,6 +144,6 @@ public class Checksum {
 			altered += ch;
 		}
 		return altered;
-	}
+	} // end alter method
 
-}
+} // end Checksum class

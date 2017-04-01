@@ -9,6 +9,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+/**
+ * @author Henry Li, Michael Tanel, Ross Vrana-Godwin
+ * Task 3 Dijkstra
+ * This class implements Dijkstra's Algorithm for finding the shortest path
+ * in the network from source node to destination node.
+ */
 public class Dijkstra {
 	
 	public static String nodeFile = "nodes.txt";
@@ -47,6 +53,10 @@ public class Dijkstra {
 			
 	}
 	
+	/**
+	 * Reads from the file to get all of the nodes.
+	 * @param s File contents.
+	 */
 	public static void getAllNodes(String s) {
 		String[] lines = s.split("\\r?\\n"); // split by line break
 		for (String line : lines) {
@@ -55,6 +65,10 @@ public class Dijkstra {
 		}
 	}
 	
+	/**
+	 * Reads from the file to get all of the edges.
+	 * @param s File contents.
+	 */
 	public static void getAllEdges(String s) {
 		String[] lines = s.split("\\r?\\n");
 		String[] cols;
@@ -67,6 +81,9 @@ public class Dijkstra {
 		}
 	}
 	
+	/**
+	 * Implementation of Dijkstra's Algorithm.
+	 */
 	public static void callDijkstra(Node source, Node dest) {
 		
 		// reached list contains nodes whose shortest paths have been computed
@@ -125,14 +142,19 @@ public class Dijkstra {
 		
 		// If arrival time to the destination location is infinity, it cannot be reached
 		if (dest.getValue() == Integer.MAX_VALUE) {
-			System.out.println("There is no possible path from " + source.getSource() + " to " + dest.getSource());
+			print("There is no possible path from " + source.getSource() + " to " + dest.getSource());
 		} else {
-			System.out.println("Path: " + dest.getPath());
-			System.out.println("Shortest path time: " + dest.getValue());
+			print("Path: " + dest.getPath());
+			print("Shortest path time: " + dest.getValue());
 		} // end if-else statement
 		
 	} // end dijkstras method
 	
+	/**
+	 * Parses the inputted Filename s.
+	 * @param s File name.
+	 * @return Contents of file.
+	 */
 	private static String readFile(String s) {
 		String contents = "";
 		try (BufferedReader reader =
@@ -156,4 +178,4 @@ public class Dijkstra {
 		return input;
 	}
 	
-} // end Main class
+}
