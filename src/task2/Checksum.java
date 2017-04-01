@@ -7,25 +7,31 @@ public class Checksum {
 	public static int blockSize = 16;
 
 	public static void main(String[] args) {
-		String codeword = generate();
+		System.out.println("Please enter bitstring from Task 1");
+		Scanner user = new Scanner(System.in);
+		String s = user.nextLine();
+		String message = stripString(s);
+		message = normalizeString(message);
+		
+		String codeword = generate(message);
 		System.out.println("The codeword (message + checksum) is: " + codeword);
 		System.out.println("Verifying message...");
 		verify(codeword);
 		System.out.println();
+		
+		// flip bit specified by user input
+		System.out.println("Plese enter bit to flip in the codeword");
+		s = user.nextLine();
+		int index = Integer.valueOf(s);
 		System.out.println("Altering message...");
-		codeword = alter(codeword, 2);
+		codeword = alter(codeword, index);
 		System.out.println("Verifying altered message...");
 		verify(codeword);
 	}
 
-	public static String generate() {
-		System.out.println("Please enter bitstring from Task 1");
-		Scanner in = new Scanner(System.in);
-		String s = in.nextLine();
-		String message = stripString(s);
-		message = normalizeString(message);
-		String checksum = getChecksum(message);
-		String codeword = message + checksum;
+	public static String generate(String s) {
+		String checksum = getChecksum(s);
+		String codeword = s + checksum;
 		return codeword;
 	}
 

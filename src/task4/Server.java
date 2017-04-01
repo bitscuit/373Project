@@ -12,6 +12,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Scanner;
 
 public class Server {
 
@@ -21,13 +22,12 @@ public class Server {
 	private static File file1 = new File("ServerFiles", "File1.txt");
 	private static File dir = new File("ServerFiles");
 
-	private static int portNum = 10000;
-
 	public static void main(String[] args) {
 		setupFiles();
 		setupConnection();
 		listFiles();
 		getClientRequest();
+		exit();
 	}
 
 	/**
@@ -56,9 +56,13 @@ public class Server {
 	 * Sets up server and wait for client to connect
 	 */
 	private static void setupConnection() {
-		//Define Server Port Number to listen on
-		int servPort = portNum;
-		//Server Socket for connection
+		// Define Server Port Number to listen on
+		System.out.println("Enter port number");
+		Scanner user = new Scanner(System.in);
+		String portNum = user.nextLine();
+		user.close();
+		int servPort = Integer.valueOf(portNum);
+		// Server Socket for connection
 		try {
 			conn = new ServerSocket(servPort);
 			System.out.println("Server up");
@@ -66,15 +70,17 @@ public class Server {
 			System.err.println("Couldn't set up server");
 		}
 
-		//Tells us if server is up and running
 		System.out.println("Waiting for Connection...");
-		//Socket for accepting message
+		// create socket connect to client
 		try {
 			dataSkt = conn.accept();
-//			String hello = getInput();
-			// sends ack frame to client
+			String hello = getInput();
+			System.out.println("Received " + hello + " from client");
 			String ack = "ACK";
-//			sendOutput(ack.getBytes());
+			System.out.println("Sending ACK to client...");
+			if (sendOutput(ack.getBytes())) {
+				System.out.println("ACK sent");
+			}
 			System.out.println("Established Connection");
 		} catch (IOException e) {
 			System.err.println("No connection");
@@ -106,29 +112,37 @@ public class Server {
 	 * Gets and parses client output to determine action. Either download files or exit
 	 */
 	private static void getClientRequest() {
-		String request = getInput();
-		String[] args = request.split("\\s+");
-		while (!args[0].toLowerCase().contains("exit")) {
-			if (args[0].toLowerCase().contains("download")) {
+		String request;
+		String[] args;
+		do {
+			request = getInput();
+			args = request.split("\\s+");
+			if (args[0].toLowerCase().equals("download")) {
 				String filename = args[1].trim();
 
 				System.out.println("Copying contents of " + filename);
 				String file = readFile(filename);
+				if (file == null) {
+					System.out.println("Client requested invalid file");
+					String msg = "-2";
+					sendOutput(msg.getBytes());
+					continue;
+				}
 
 				System.out.println("Sending " + filename + " to client...");
 				sendFile(file);
 				
-//				String ack = getInput();
-//				System.out.println(ack);
-				// next request
-				request = getInput();
-				args = request.split("\\s+");
+				String ack = getInput();
+				System.out.println(ack + " received from client");
+			} else if (args[0].toLowerCase().equals("list")) {
+				listFiles();
+				
 			} else {
 				break;
 			}
-		}
+		} while (!args[0].toLowerCase().equals("exit"));
 		System.out.println("Exiting");
-		exit();
+		return;
 	}
 
 	/**
@@ -164,6 +178,10 @@ public class Server {
 	 */
 	private static String readFile(String s) {
 		String contents = "";
+		File f = new File("ServerFiles", s);
+		if (!f.exists()) {
+			return null;
+		}
 		try (BufferedReader reader =
 				new BufferedReader(new FileReader("ServerFiles" + File.separator + s))) {
 			String line = "";

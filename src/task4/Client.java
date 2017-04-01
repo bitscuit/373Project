@@ -58,9 +58,19 @@ public class Client {
 		//Socket to connect to the server at the IP address and port
 		try {
 			clientSkt = new Socket(serverAddr, port);
-			// TODO: send hello frame
-			// TODO: accept ack frame
-			System.out.println("Connection established");
+			String hello = "HELLO";
+			System.out.println("Sending HELLO to server...");
+			if (!sendOutput(hello.getBytes())) {
+				System.err.println("Could not send HELLO. Shutting down");
+				return false;
+			}
+			System.out.println("HELLO sent to server");
+			String ack = getInput();
+			if (!ack.trim().equals("ACK")) {
+				System.err.println("Did not receive ACK frame from server");
+				return false;
+			}
+			System.out.println("Received ACK from server. Connection established");
 		} catch (IOException e) {
 			System.err.println("Failed to connect to server");
 			return false;		
@@ -68,39 +78,60 @@ public class Client {
 		return true;
 	}
 
-	private static void getFileList() {
+	private static boolean getFileList() {
 		System.out.println("Getting list of available files from server...");
 		String fileList = getInput();
+		if (fileList.trim().equals("-1")) {
+			return false;
+		}
 		System.out.println("List of Files: ");
 		System.out.println(fileList);
+		return true;
 	}
 
 	private static void sendRequests() {
-		System.out.println("Download file with \"download <file_name>\" or exit with \"exit\"");
-		String command = userInput.nextLine();
-		String[] args = command.split("\\s+");
-		String action = args[0].toLowerCase().trim();
+		System.out.println("Download file with \"download <file_name>\". List all server files with"
+				+ "\"list <file_name>\". Exit with \"exit\"");
+		// get command from user input
+		String command;
+		String[] args;
+		String action;
 
-		while (true) {
+		do {
+			System.out.println("Input command");
+			command = userInput.nextLine();
+			args = command.split("\\s+");
+			action = args[0].toLowerCase().trim();
 			if (action.equals("exit")) {
 				break;
 			} else if (action.equals("download")) {
 				sendOutput(command.getBytes());
 				String fileContent = getInput();
+				// invalid file
 				if (fileContent.equals("-1")) {
+					System.err.println("Unexpected error has occurred. Shutting down");
 					break;
 				}
+				if (fileContent.equals("-2")) {
+					System.out.println("File entered was invalid.");
+					continue;
+				}
+				// file has been received, now send ACK to server
+				String ack = "ACK";
+				sendOutput(ack.getBytes());
 				String filename = args[1];
 				writeFile(fileContent, filename);
 
-				System.out.println("Input command");
-				command = userInput.nextLine();
-				args = command.split("\\s+");
-				action = args[0].toLowerCase();
+			} else if (action.equals("list")) {
+				sendOutput(command.getBytes());
+				if (!getFileList()) {
+					break;
+				}
 			} else {
 				System.out.println("Invalid command");
 			}
-		}
+			
+		} while (true);
 	}
 
 	private static void writeFile(String s, String name) {
