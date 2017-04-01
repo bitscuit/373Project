@@ -30,15 +30,14 @@ public class OSI {
 	 * Adds the application layer's header
 	 */
 	public static void callAppLayer() {
-		// HTTP header
 		String header = "Layer7";
 		message = header + "|" + message;
 		System.out.println("Message at Layer 7: " + message);
 		callPresentLayer();
 	}
 
-	/*
-	 * Method to implement OSI model's Presentation Layer
+	/**
+	 * Adds the presentation layer's header
 	 */
 	public static void callPresentLayer() {
 		// Presentation layer header
@@ -48,6 +47,9 @@ public class OSI {
 		callSessionLayer();
 	}
 
+	/**
+	 * Adds the session layer's header
+	 */
 	public static void callSessionLayer() {
 		// Session layer header
 		String header = "Layer5";
@@ -56,6 +58,10 @@ public class OSI {
 		callTransportLayer();
 	}
 
+	/**
+	 * Adds the transport layer's header
+	 * The port number is assumed
+	 */
 	public static void callTransportLayer() {
 		// Transport layer header
 		String header = "Layer4 Port: 80";
@@ -64,6 +70,10 @@ public class OSI {
 		callNetworkLayer();
 	}
 
+	/**
+	 * Adds the network layer's header
+	 * The IP address is assumed
+	 */
 	public static void callNetworkLayer() {
 		// Network layer header
 		String header = "Layer3 IP Address: 192.168.0.1";
@@ -72,6 +82,9 @@ public class OSI {
 		callDataLayer();
 	}
 
+	/**
+	 * Adds the data layer's header and trailer
+	 */
 	public static void callDataLayer() {
 		// Data Link layer header
 		String header = "Layer2";
@@ -81,23 +94,32 @@ public class OSI {
 		callPhysicalLayer();
 	}
 
+	/**
+	 * Converts the message with all the headers from previous layers into
+	 * a bit stream. The "|" that were added from previous layers were only for
+	 * convenience and are not converted to a bit stream. Instead they are used to 
+	 * segment the bit stream in blocks of 8 (byte size) for readability purposes.
+	 */
 	public static void callPhysicalLayer() {
 		char[] ch = message.toCharArray();
 		String bitstring;
 		System.out.println("Bit stream is: ");
 		String size = "";
+		// for each character convert it to the binary ascii representation unless
+		// it is "|"
 		for (char c : ch) {
 			if (c == '|') {
 				System.out.print("| ");
 			} else {
-				// convert to binary
+				// convert to string to binary representation
 				String s = Integer.toBinaryString((int) c);
-				// pad string with 0's until 8 bits
+				// pad string with 0's until 8 bits to ensure size is uniform 
 				bitstring = String.format("%08d", Integer.valueOf(s));
 				size += bitstring;
 				System.out.print(bitstring + " ");
 			}
 		}
+		// size of entire message in bits
 		System.out.println(System.lineSeparator() + "Message size is: " + size.length() + " bits");
 	}
 

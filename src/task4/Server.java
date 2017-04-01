@@ -14,24 +14,32 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Scanner;
 
+/**
+ * @author Henry Li, Michael Tanel, Ross Vrana-Godwin
+ * Task 4 Server
+ * Server sends files from the ServerFiles to client upon request
+ * Server must be running before client
+ */
 public class Server {
 
 	private static ServerSocket conn = null;
 	private static Socket dataSkt = null;
 
+	// directory and file are generated if they do not exist
 	private static File file1 = new File("ServerFiles", "File1.txt");
 	private static File dir = new File("ServerFiles");
 
 	public static void main(String[] args) {
 		setupFiles();
-		setupConnection();
-		listFiles();
-		getClientRequest();
+		if (setupConnection()) {
+			listFiles();
+			getClientRequest();
+		}
 		exit();
 	}
 
 	/**
-	 * Generates server files if they do not exist yet
+	 * Generates server directory file1 if they do not exist
 	 */
 	private static void setupFiles() {
 		// make new directory for server files if it does not exist
@@ -39,9 +47,9 @@ public class Server {
 			dir.mkdirs();
 		}
 		String s = "Dummy data for file1.";
-		// put dummy data in file
 		if (!(file1.exists())) {
 			System.out.println("File 1 doesn't exist");
+			// put dummy data in file
 			try (BufferedWriter out = 
 					new BufferedWriter(new FileWriter("ServerFiles" + File.separator + file1.getName()))) {
 				out.write(s);
@@ -54,8 +62,9 @@ public class Server {
 
 	/**
 	 * Sets up server and wait for client to connect
+	 * @return true if connection was fully established. False otherwise
 	 */
-	private static void setupConnection() {
+	private static boolean setupConnection() {
 		// Define Server Port Number to listen on
 		System.out.println("Enter port number");
 		Scanner user = new Scanner(System.in);
@@ -68,13 +77,18 @@ public class Server {
 			System.out.println("Server up");
 		} catch (IOException e) {
 			System.err.println("Couldn't set up server");
+			return false;
 		}
 
+		// waits for connection from a client
 		System.out.println("Waiting for Connection...");
-		// create socket connect to client
+		// create socket to connect to client
 		try {
 			dataSkt = conn.accept();
 			String hello = getInput();
+			if (!hello.trim().equals("HELLO")) {
+				return false;
+			}
 			System.out.println("Received " + hello + " from client");
 			String ack = "ACK";
 			System.out.println("Sending ACK to client...");
@@ -84,22 +98,24 @@ public class Server {
 			System.out.println("Established Connection");
 		} catch (IOException e) {
 			System.err.println("No connection");
+			return false;
 		}
+		return true;
 	}
 
 	/**
-	 * List files that are in the ServerFiles directory, i.e. files available for download
+	 * List the files that are in the ServerFiles directory, i.e. files available for download
 	 */
 	private static void listFiles() {
 		System.out.println("Sending client list of available files...");
-		// get list of files
+		// get list of available files
 		String list = "";
 		for (File f : dir.listFiles()) {
 			if (f.isFile()) {
 				list += f.getName() + " ";
 			}
 		}
-		// send list
+		// send list to client
 		byte[] fileList = list.getBytes();
 		if (sendOutput(fileList)) {
 			System.out.println("File list sent to client");
@@ -109,38 +125,39 @@ public class Server {
 	}
 
 	/**
-	 * Gets and parses client output to determine action. Either download files or exit
+	 * Gets and parses client request to determine action. Either download files, list files or exit
 	 */
 	private static void getClientRequest() {
 		String request;
 		String[] args;
 		do {
+			// wait for client request
 			request = getInput();
-			args = request.split("\\s+");
+			args = request.split("\\s+"); // split string by spaces/tabs, i.e. separate the arguments
 			if (args[0].toLowerCase().equals("download")) {
 				String filename = args[1].trim();
-
+				// get file contents
 				System.out.println("Copying contents of " + filename);
 				String file = readFile(filename);
+				// checks if file requested is valid
 				if (file == null) {
 					System.out.println("Client requested invalid file");
 					String msg = "-2";
 					sendOutput(msg.getBytes());
 					continue;
 				}
-
+				
 				System.out.println("Sending " + filename + " to client...");
 				sendFile(file);
-				
+				// ensure client received file
 				String ack = getInput();
 				System.out.println(ack + " received from client");
-			} else if (args[0].toLowerCase().equals("list")) {
+			} else if (args[0].toLowerCase().equals("list")) { // list available files to download
 				listFiles();
-				
 			} else {
 				break;
 			}
-		} while (!args[0].toLowerCase().equals("exit"));
+		} while (!args[0].toLowerCase().equals("exit")); // exit when client exits
 		System.out.println("Exiting");
 		return;
 	}
@@ -150,6 +167,7 @@ public class Server {
 	 * @return String representation of input stream
 	 */
 	private static String getInput() {
+		// get the input stream
 		InputStream in = null;
 		BufferedInputStream buffIn = null;
 		try {
@@ -158,6 +176,8 @@ public class Server {
 		} catch (IOException e) {
 			System.err.println("Failed to get input stream");
 		}
+		
+		// read the input stream
 		byte[] b = new byte[1024];
 		System.out.println("Waiting for client request...");
 		try {
@@ -166,15 +186,16 @@ public class Server {
 		} catch (IOException e) {
 			System.err.println("Could not read client request");
 		}
+		// convert byte[] to string
 		String s = new String(b);
 		s = s.trim();
 		return s;
 	}
 
 	/**
-	 * Reads file specified by the file name, s, and copies contents into a string
+	 * Reads file specified and copies contents into a string
 	 * @param s The file name
-	 * @return String representation of the file contents
+	 * @return string representation of the file contents
 	 */
 	private static String readFile(String s) {
 		String contents = "";
@@ -209,13 +230,14 @@ public class Server {
 	}
 
 	/**
-	 * Sends message to the server output stream, i.e, send to client input stream
+	 * Sends message to the server output stream, i.e, send to client
 	 * @param b Byte array representation of message
 	 * @return True if and only if message was successfully put on server output stream
 	 */
 	private static boolean sendOutput(byte[] b) {
 		OutputStream out = null;
 		BufferedOutputStream buffOut= null;
+		// get output stream
 		try {
 			out = dataSkt.getOutputStream();
 			buffOut = new BufferedOutputStream(out);
@@ -223,6 +245,7 @@ public class Server {
 			System.err.print("Could not create output stream");
 		}
 
+		// write to output stream
 		try {
 			buffOut.write(b, 0, b.length);
 			buffOut.flush();
