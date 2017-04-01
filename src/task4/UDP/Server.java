@@ -1,4 +1,4 @@
-package task4;
+package task4.UDP;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -85,16 +85,6 @@ public class Server {
 		// create socket to connect to client
 		try {
 			dataSkt = conn.accept();
-			String hello = getInput();
-			if (!hello.trim().equals("HELLO")) {
-				return false;
-			}
-			System.out.println("Received " + hello + " from client");
-			String ack = "ACK";
-			System.out.println("Sending ACK to client...");
-			if (sendOutput(ack.getBytes())) {
-				System.out.println("ACK sent");
-			}
 			System.out.println("Established Connection");
 		} catch (IOException e) {
 			System.err.println("No connection");
@@ -149,9 +139,6 @@ public class Server {
 				
 				System.out.println("Sending " + filename + " to client...");
 				sendFile(file);
-				// ensure client received file
-				String ack = getInput();
-				System.out.println(ack + " received from client");
 			} else if (args[0].toLowerCase().equals("list")) { // list available files to download
 				listFiles();
 			} else {

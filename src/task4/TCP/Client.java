@@ -1,4 +1,4 @@
-package task4;
+package task4.TCP;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
